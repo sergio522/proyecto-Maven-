@@ -3,6 +3,9 @@
 <file name="/workspaces/proyecto-Maven-/parcial1-voltacali/src/main/java/co/edu/usc/voltacali/App.java">
 </file>
 <file name="/workspaces/proyecto-Maven-/parcial1-voltacali/src/main/java/co/edu/usc/voltacali/CargadorVE.java">
+<error line="179" column="12" severity="error" message="More than 7 parameters (found 9)." source="com.puppycrawl.tools.checkstyle.checks.sizes.ParameterNumberCheck"/>
+<error line="205" column="43" severity="error" message="&apos;220&apos; is a magic number." source="com.puppycrawl.tools.checkstyle.checks.coding.MagicNumberCheck"/>
+<error line="313" column="59" severity="error" message="&apos;60.0&apos; is a magic number." source="com.puppycrawl.tools.checkstyle.checks.coding.MagicNumberCheck"/>
 </file>
 <file name="/workspaces/proyecto-Maven-/parcial1-voltacali/src/test/java/co/edu/usc/voltacali/AppTest.java">
 </file>
