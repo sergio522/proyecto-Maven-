@@ -23,9 +23,9 @@ public class App {
         // Paso 1: Crear la flota
         CargadorVE c1 = new CargadorVE("ABB", 2023, 400,
                 CargadorVE.TipoConector.CCS2, CargadorVE.TipoCargador.RAPIDO_DC,
-                2, 2, 60.0, CargadorVE.Ubicacion.UNIVERSIDAD);
+                2, 2, CargadorVE.POTENCIA_DEFECTO_C1, CargadorVE.Ubicacion.UNIVERSIDAD);
 
-        CargadorVE c2 = new CargadorVE("Siemens", 2022, 220,
+        CargadorVE c2 = new CargadorVE("Siemens", 2022, CargadorVE.VOLTAJE_DEFECTO,
                 CargadorVE.TipoConector.TIPO_2, CargadorVE.TipoCargador.MURAL,
                 1, 1, 22.0, CargadorVE.Ubicacion.CENTRO_COMERCIAL);
 
@@ -33,7 +33,7 @@ public class App {
                 CargadorVE.TipoConector.CCS2, CargadorVE.TipoCargador.ULTRARRAPIDO,
                 2, 2, 150.0, CargadorVE.Ubicacion.ESTACION_SERVICIO);
 
-        CargadorVE c4 = new CargadorVE("Wallbox", 2021, 220,
+        CargadorVE c4 = new CargadorVE("Wallbox", 2021, CargadorVE.VOLTAJE_DEFECTO,
                 CargadorVE.TipoConector.TIPO_2, CargadorVE.TipoCargador.MURAL,
                 1, 1, 11.0, CargadorVE.Ubicacion.RESIDENCIAL);
 
@@ -97,15 +97,16 @@ public class App {
         System.out.printf("[P17] Excesos de potencia contratada: %d%n", CargadorVE.excesosDePotenciaContratada(flota));
 
         System.out.println("[P18] Filtrados de flota:");
-        System.out.printf(" - TIPO_2: %d cargador(es)%n", CargadorVE.filtrar(flota, CargadorVE.TipoConector.TIPO_2).length);
-        System.out.printf(" - MURAL: %d cargador(es)%n", CargadorVE.filtrar(flota, CargadorVE.TipoCargador.MURAL).length);
-        System.out.printf(" - UNIVERSIDAD: %d cargador(es)%n", CargadorVE.filtrar(flota, CargadorVE.Ubicacion.UNIVERSIDAD).length);
+        int t2Count = CargadorVE.filtrar(flota, CargadorVE.TipoConector.TIPO_2).length;
+        int murCount = CargadorVE.filtrar(flota, CargadorVE.TipoCargador.MURAL).length;
+        int uniCount = CargadorVE.filtrar(flota, CargadorVE.Ubicacion.UNIVERSIDAD).length;
+        System.out.printf(" - TIPO_2: %d | MURAL: %d | UNIVERSIDAD: %d%n", t2Count, murCount, uniCount);
 
         System.out.println("[P19] C5 (valores por defecto):");
         c5.mostrar(false);
 
         CargadorVE copiaC3 = new CargadorVE(c3);
-        System.out.printf("[P20] Copia de C3 -> Fab: %s | PotActual: %.1f kW | Bitacora: %d | TotalCargadores: %d%n",
+        System.out.printf("[P20] Copia C3 -> Fab: %s | PotActual: %.1f kW | Bitacora: %d | Total: %d%n",
                 copiaC3.getFabricante(), copiaC3.getPotenciaActual(),
                 copiaC3.getCantidadRegistros(), CargadorVE.getTotalCargadores());
 
@@ -132,11 +133,11 @@ public class App {
         // PARTE F: Extension personalizada C6
         int d1 = 5;
         int d2 = 2;
-        CargadorVE c6 = new CargadorVE("USC-52", 2017, 220,
+        CargadorVE c6 = new CargadorVE("USC-52", 2017, CargadorVE.VOLTAJE_DEFECTO,
                 CargadorVE.TipoConector.TIPO_2, CargadorVE.TipoCargador.RAPIDO_DC,
                 3, 3, 72.0, CargadorVE.Ubicacion.RESIDENCIAL);
 
-        System.out.println("%n[X01] Datos de C6:");
+        System.out.println("\n[X01] Datos de C6:");
         System.out.printf("N: %d | d1: %d | d2: %d%n", n, d1, d2);
         c6.mostrar(false);
 

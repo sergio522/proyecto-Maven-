@@ -11,8 +11,12 @@ public class CargadorVE {
     public static final double LIMITE_RED = 100.0;
     /** Tamano inicial por defecto de la bitacora de cambios. */
     public static final int TAMANO_BITACORA_INICIAL = 10;
+    /** Voltaje por defecto en voltios. */
+    public static final int VOLTAJE_DEFECTO = 220;
+    /** Potencia por defecto para c1. */
+    public static final double POTENCIA_DEFECTO_C1 = 60.0;
 
-    /** Enumm para los tipos de conector. */
+    /** Enum para los tipos de conector. */
     public enum TipoConector {
         /** Conector CCS1. */
         CCS1,
@@ -114,8 +118,8 @@ public class CargadorVE {
         }
     }
 
-    private static int totalCargadores = 0;
-    private static int contadorRegistros = 0;
+    private static int totalCargadores;
+    private static int contadorRegistros;
 
     private String fabricante;
     private int anioInstalacion;
@@ -144,6 +148,7 @@ public class CargadorVE {
      * @param potenciaMaxima Potencia maxima.
      * @param ubicacion Ubicacion.
      */
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public CargadorVE(String fabricante, int anioInstalacion, int voltajeNominal,
                       TipoConector tipoConector, TipoCargador tipoCargador,
                       int numeroConectores, int puestosParqueo,
@@ -171,7 +176,7 @@ public class CargadorVE {
      * @param potenciaMaxima Potencia maxima.
      */
     public CargadorVE(String fabricante, int anioInstalacion, double potenciaMaxima) {
-        this(fabricante, anioInstalacion, 220, TipoConector.TIPO_2, TipoCargador.LENTO_AC,
+        this(fabricante, anioInstalacion, VOLTAJE_DEFECTO, TipoConector.TIPO_2, TipoCargador.LENTO_AC,
                 1, 1, potenciaMaxima, Ubicacion.PARQUEADERO_PUBLICO);
     }
 
@@ -373,6 +378,7 @@ public class CargadorVE {
      * @param minutosPorPausa Duracion por pausa en minutos.
      * @return Horas estimadas.
      */
+    @SuppressWarnings("checkstyle:MagicNumber")
     public double tiempoEstimadoCarga(double energiaKwh, int numeroPausas, double minutosPorPausa) {
         double base = tiempoEstimadoCarga(energiaKwh);
         if (base < 0.0) {
@@ -406,9 +412,17 @@ public class CargadorVE {
         }
     }
 
-    // --- METODOS DE FILTRADO Y ESTADISTICAS ---
-
+    /**
+     * Filtra cargadores por tipo de conector.
+     *
+     * @param flota Arreglo de cargadores.
+     * @param tc Tipo de conector a buscar.
+     * @return Arreglo filtrado.
+     */
     public static CargadorVE[] filtrar(CargadorVE[] flota, TipoConector tc) {
+        if (flota == null) {
+            return new CargadorVE[0];
+        }
         int c = 0;
         for (CargadorVE carg : flota) {
             if (carg != null && carg.tipoConector == tc) {
@@ -425,7 +439,17 @@ public class CargadorVE {
         return res;
     }
 
+    /**
+     * Filtra cargadores por tipo de cargador.
+     *
+     * @param flota Arreglo de cargadores.
+     * @param tc Tipo de cargador a buscar.
+     * @return Arreglo filtrado.
+     */
     public static CargadorVE[] filtrar(CargadorVE[] flota, TipoCargador tc) {
+        if (flota == null) {
+            return new CargadorVE[0];
+        }
         int c = 0;
         for (CargadorVE carg : flota) {
             if (carg != null && carg.tipoCargador == tc) {
@@ -442,7 +466,17 @@ public class CargadorVE {
         return res;
     }
 
+    /**
+     * Filtra cargadores por ubicacion.
+     *
+     * @param flota Arreglo de cargadores.
+     * @param u Ubicacion a buscar.
+     * @return Arreglo filtrado.
+     */
     public static CargadorVE[] filtrar(CargadorVE[] flota, Ubicacion u) {
+        if (flota == null) {
+            return new CargadorVE[0];
+        }
         int c = 0;
         for (CargadorVE carg : flota) {
             if (carg != null && carg.ubicacion == u) {
@@ -459,6 +493,11 @@ public class CargadorVE {
         return res;
     }
 
+    /**
+     * Cuenta la cantidad de cargadores existentes por cada tipo de cargador.
+     *
+     * @param flota Arreglo de cargadores.
+     */
     public static void contarPorTipo(CargadorVE[] flota) {
         if (flota == null) {
             return;
@@ -476,6 +515,12 @@ public class CargadorVE {
         }
     }
 
+    /**
+     * Calcula el promedio de potencia actual en la flota.
+     *
+     * @param flota Arreglo de cargadores.
+     * @return Promedio en kW.
+     */
     public static double promedioPotencia(CargadorVE[] flota) {
         if (flota == null || flota.length == 0) {
             return 0.0;
@@ -491,6 +536,11 @@ public class CargadorVE {
         return count == 0 ? 0.0 : suma / count;
     }
 
+    /**
+     * Encuentra e imprime el cargador con mayor potencia actual.
+     *
+     * @param flota Arreglo de cargadores.
+     */
     public static void mayorPotencia(CargadorVE[] flota) {
         if (flota == null) {
             return;
@@ -508,6 +558,12 @@ public class CargadorVE {
         }
     }
 
+    /**
+     * Cuenta cuantos cargadores superan el limite de la red.
+     *
+     * @param flota Arreglo de cargadores.
+     * @return Cantidad de excesos.
+     */
     public static int excesosDePotenciaContratada(CargadorVE[] flota) {
         if (flota == null) {
             return 0;
@@ -521,7 +577,13 @@ public class CargadorVE {
         return cnt;
     }
 
-    // --- RUTA 0: cargadoresPorConectores ---
+    /**
+     * Busca cargadores segun el numero de conectores (Ruta 0).
+     *
+     * @param flota Arreglo de cargadores.
+     * @param conectores Cantidad de conectores requerida.
+     * @return Arreglo de cargadores coincidentes.
+     */
     public static CargadorVE[] cargadoresPorConectores(CargadorVE[] flota, int conectores) {
         if (flota == null) {
             return new CargadorVE[0];
