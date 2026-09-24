@@ -63,14 +63,15 @@ public class CargadorVE {
         FLOTA_CORPORATIVA
     }
 
-    /** Total de cargadores creados. */
-    public static int totalCargadores = 0;
-    /** Contador global de registros de sesion. */
-    public static int contadorRegistros = 0;
     /** Limite de potencia de la red en kW. */
     public static final double LIMITE_RED = 50.0;
     /** Incremento por defecto en kW. */
     public static final double INCREMENTO_DEFECTO = 5.0;
+
+    /** Total de cargadores creados. */
+    private static int totalCargadores;
+    /** Contador global de registros de sesion. */
+    private static int contadorRegistros;
 
     /** Marca del equipo. */
     private String fabricante;
@@ -172,6 +173,42 @@ public class CargadorVE {
         this.potenciaActual = 0.0;
         this.bitacora = new Vector<>();
         totalCargadores++;
+    }
+
+    /**
+     * Obtiene el total de cargadores.
+     *
+     * @return Total de cargadores.
+     */
+    public static int getTotalCargadores() {
+        return totalCargadores;
+    }
+
+    /**
+     * Establece el total de cargadores.
+     *
+     * @param totalCargadores Total de cargadores.
+     */
+    public static void setTotalCargadores(int totalCargadores) {
+        CargadorVE.totalCargadores = totalCargadores;
+    }
+
+    /**
+     * Obtiene el contador de registros.
+     *
+     * @return Contador de registros.
+     */
+    public static int getContadorRegistros() {
+        return contadorRegistros;
+    }
+
+    /**
+     * Establece el contador de registros.
+     *
+     * @param contadorRegistros Contador de registros.
+     */
+    public static void setContadorRegistros(int contadorRegistros) {
+        CargadorVE.contadorRegistros = contadorRegistros;
     }
 
     /**

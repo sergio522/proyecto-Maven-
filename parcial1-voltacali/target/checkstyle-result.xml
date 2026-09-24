@@ -3,11 +3,6 @@
 <file name="/workspaces/proyecto-Maven-/parcial1-voltacali/src/main/java/co/edu/usc/voltacali/App.java">
 </file>
 <file name="/workspaces/proyecto-Maven-/parcial1-voltacali/src/main/java/co/edu/usc/voltacali/CargadorVE.java">
-<error line="1" severity="error" message="File does not end with a newline." source="com.puppycrawl.tools.checkstyle.checks.NewlineAtEndOfFileCheck"/>
-<error line="67" column="23" severity="error" message="Variable &apos;totalCargadores&apos; explicitly initialized to &apos;0&apos; (default value for its type)." source="com.puppycrawl.tools.checkstyle.checks.coding.ExplicitInitializationCheck"/>
-<error line="67" column="23" severity="error" message="Variable &apos;totalCargadores&apos; must be private and have accessor methods." source="com.puppycrawl.tools.checkstyle.checks.design.VisibilityModifierCheck"/>
-<error line="69" column="23" severity="error" message="Variable &apos;contadorRegistros&apos; explicitly initialized to &apos;0&apos; (default value for its type)." source="com.puppycrawl.tools.checkstyle.checks.coding.ExplicitInitializationCheck"/>
-<error line="69" column="23" severity="error" message="Variable &apos;contadorRegistros&apos; must be private and have accessor methods." source="com.puppycrawl.tools.checkstyle.checks.design.VisibilityModifierCheck"/>
 </file>
 <file name="/workspaces/proyecto-Maven-/parcial1-voltacali/src/test/java/co/edu/usc/voltacali/AppTest.java">
 </file>
