@@ -1,186 +1,149 @@
 package co.edu.usc.voltacali;
 
-import java.util.Vector;
-
 /**
- * Clase que representa un cargador de vehiculo electrico.
+ * Clase que representa un Cargador de Vehiculo Electrico (VE).
  */
 public class CargadorVE {
 
-    /**
-     * Enum para los tipos de conector.
-     */
+    /** Incremento por defecto de potencia en kW. */
+    public static final double INCREMENTO_DEFECTO = 5.0;
+    /** Limite maximo de potencia permitido por la red electrica en kW. */
+    public static final double LIMITE_RED = 100.0;
+    /** Tamano inicial por defecto de la bitacora de cambios. */
+    public static final int TAMANO_BITACORA_INICIAL = 10;
+
+    /** Enumm para los tipos de conector. */
     public enum TipoConector {
-        /** Conector Tipo 1. */
-        TIPO_1,
-        /** Conector Tipo 2. */
-        TIPO_2,
+        /** Conector CCS1. */
+        CCS1,
         /** Conector CCS2. */
         CCS2,
-        /** Conector CHADEMO. */
+        /** Conector Tipo 2. */
+        TIPO_2,
+        /** Conector CHAdeMO. */
         CHADEMO,
-        /** Conector GBT. */
+        /** Conector GB/T. */
         GBT
     }
 
-    /**
-     * Enum para los tipos de cargador.
-     */
+    /** Enum para los tipos de cargador. */
     public enum TipoCargador {
-        /** Cargador de pared. */
-        MURAL,
-        /** Cargador pedestal. */
-        PEDESTAL,
-        /** Cargador rapido DC. */
+        /** Cargador Lento AC. */
+        LENTO_AC,
+        /** Cargador Semirrapido AC. */
+        SEMIRRAPIDO_AC,
+        /** Cargador Rapido AC. */
+        RAPIDO_AC,
+        /** Cargador Rapido DC. */
         RAPIDO_DC,
-        /** Cargador ultrarrapido. */
+        /** Cargador Ultrarrapido. */
         ULTRARRAPIDO,
-        /** Cargador portatil. */
-        PORTATIL,
-        /** Cargador bidireccional V2G. */
-        BIDIRECCIONAL_V2G
+        /** Cargador Mural. */
+        MURAL
     }
 
-    /**
-     * Enum para las ubicaciones.
-     */
+    /** Enum para la ubicacion del cargador. */
     public enum Ubicacion {
-        /** Ubicacion centro comercial. */
-        CENTRO_COMERCIAL,
-        /** Ubicacion universidad. */
+        /** Ubicacion Universidad. */
         UNIVERSIDAD,
-        /** Ubicacion estacion de servicio. */
+        /** Ubicacion Centro Comercial. */
+        CENTRO_COMERCIAL,
+        /** Ubicacion Estacion de Servicio. */
         ESTACION_SERVICIO,
-        /** Ubicacion parqueadero publico. */
+        /** Ubicacion Parqueadero Publico. */
         PARQUEADERO_PUBLICO,
-        /** Ubicacion residencial. */
+        /** Ubicacion Residencial. */
         RESIDENCIAL,
-        /** Ubicacion hotel. */
+        /** Ubicacion Hospital. */
+        HOSPITAL,
+        /** Ubicacion Hotel. */
         HOTEL,
-        /** Ubicacion terminal. */
-        TERMINAL,
-        /** Ubicacion flota corporativa. */
-        FLOTA_CORPORATIVA
+        /** Ubicacion Via Publica. */
+        VIA_PUBLICA
     }
 
-    /** Limite de potencia de la red en kW. */
-    public static final double LIMITE_RED = 50.0;
-    /** Incremento por defecto en kW. */
-    public static final double INCREMENTO_DEFECTO = 5.0;
-    /** Voltaje por defecto en voltios. */
-    public static final int VOLTAJE_DEFECTO = 220;
-    /** Minutos por hora para conversiones de tiempo. */
-    public static final double MINUTOS_POR_HORA = 60.0;
-
-    /** Total de cargadores creados. */
-    private static int totalCargadores;
-    /** Contador global de registros de sesion. */
-    private static int contadorRegistros;
-
-    /** Marca del equipo. */
-    private String fabricante;
-    /** Año de instalacion. */
-    private int anioInstalacion;
-    /** Voltaje nominal de operacion. */
-    private int voltajeNominal;
-    /** Conector principal. */
-    private TipoConector tipoConector;
-    /** Categoria del equipo. */
-    private TipoCargador tipoCargador;
-    /** Conectores disponibles. */
-    private int numeroConectores;
-    /** Puestos de parqueo. */
-    private int puestosParqueo;
-    /** Potencia maxima del equipo. */
-    private double potenciaMaxima;
-    /** Ubicacion del cargador. */
-    private Ubicacion ubicacion;
-    /** Potencia actual entregada. */
-    private double potenciaActual;
-
-    /** Bitacora de sesiones del cargador. */
-    private Vector<RegistroSesion> bitacora;
-
-    /**
-     * Clase interna no estatica para registrar las sesiones de carga.
-     */
-    public class RegistroSesion {
-        /** Identificador del registro. */
-        private int idRegistro;
-        /** Marca del fabricante capturada. */
+    /** Clase interna para representar una entrada en la bitacora. */
+    public static class RegistroBitacora {
         private String fabricante;
-        /** Año de instalacion capturado. */
         private int anioInstalacion;
-        /** Potencia actual capturada. */
-        private double potenciaActual;
-        /** Descripcion del evento. */
+        private double potenciaRegistrada;
         private String evento;
-        /** Estado del evento (valido o no). */
-        private boolean valido;
+        private boolean pasoExitoso;
 
         /**
-         * Constructor para RegistroSesion.
+         * Constructor para RegistroBitacora.
          *
-         * @param evento Descripcion del evento.
-         * @param valido Si fue valido o no.
+         * @param fab Fabricante del cargador.
+         * @param anio Anio de instalacion.
+         * @param pot Potencia en el momento del evento.
+         * @param ev Descripcion del evento.
+         * @param exitoso Indica si la operacion fue exitosa.
          */
-        public RegistroSesion(String evento, boolean valido) {
-            contadorRegistros++;
-            this.idRegistro = contadorRegistros;
-            this.fabricante = CargadorVE.this.fabricante;
-            this.anioInstalacion = CargadorVE.this.anioInstalacion;
-            this.potenciaActual = CargadorVE.this.potenciaActual;
-            this.evento = evento;
-            this.valido = valido;
+        public RegistroBitacora(String fab, int anio, double pot, String ev, boolean exitoso) {
+            this.fabricante = fab;
+            this.anioInstalacion = anio;
+            this.potenciaRegistrada = pot;
+            this.evento = ev;
+            this.pasoExitoso = exitoso;
         }
 
-        /**
-         * Describe el registro.
-         *
-         * @return Descripcion formateada del registro.
-         */
-        public String describir() {
-            return String.format("#%d | %s | Año: %d | Pot: %.2f kW | Evento: %s | Valido: %b",
-                    idRegistro, fabricante, anioInstalacion, potenciaActual, evento, valido);
+        public String getFabricante() {
+            return fabricante;
         }
 
-        /**
-         * Obtiene si el registro es valido.
-         *
-         * @return true si es valido, false en caso contrario.
-         */
-        public boolean isValido() {
-            return valido;
+        public int getAnioInstalacion() {
+            return anioInstalacion;
         }
 
-        /**
-         * Obtiene la potencia actual registrada.
-         *
-         * @return Potencia actual en kW.
-         */
-        public double getPotenciaActual() {
-            return potenciaActual;
+        public double getPotenciaRegistrada() {
+            return potenciaRegistrada;
+        }
+
+        public String getEvento() {
+            return evento;
+        }
+
+        public boolean isPasoExitoso() {
+            return pasoExitoso;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s | Anio: %d | Pot: %.2f kW | Evento: %s | Valido: %b",
+                    fabricante, anioInstalacion, potenciaRegistrada, evento, pasoExitoso);
         }
     }
 
-    // ======================================================
-    // Familia 1: Constructores
-    // ======================================================
+    private static int totalCargadores = 0;
+    private static int contadorRegistros = 0;
+
+    private String fabricante;
+    private int anioInstalacion;
+    private int voltajeNominal;
+    private TipoConector tipoConector;
+    private TipoCargador tipoCargador;
+    private int numeroConectores;
+    private int puestosParqueo;
+    private double potenciaMaxima;
+    private double potenciaActual;
+    private Ubicacion ubicacion;
+
+    private RegistroBitacora[] bitacora;
+    private int cantidadRegistros;
 
     /**
-     * Constructor completo con 9 parametros.
+     * Constructor completo.
      *
-     * @param fabricante Marca.
-     * @param anioInstalacion Año.
-     * @param voltajeNominal Voltaje.
-     * @param tipoConector Conector.
-     * @param tipoCargador Categoria.
-     * @param numeroConectores Cantidad conectores.
-     * @param puestosParqueo Puestos.
-     * @param potenciaMaxima Potencia max.
-     * @param ubicacion Sitio.
+     * @param fabricante Fabricante.
+     * @param anioInstalacion Anio de instalacion.
+     * @param voltajeNominal Voltaje nominal.
+     * @param tipoConector Tipo de conector.
+     * @param tipoCargador Tipo de cargador.
+     * @param numeroConectores Numero de conectores.
+     * @param puestosParqueo Puestos de parqueo.
+     * @param potenciaMaxima Potencia maxima.
+     * @param ubicacion Ubicacion.
      */
-    @SuppressWarnings("checkstyle:ParameterNumber")
     public CargadorVE(String fabricante, int anioInstalacion, int voltajeNominal,
                       TipoConector tipoConector, TipoCargador tipoCargador,
                       int numeroConectores, int puestosParqueo,
@@ -195,226 +158,238 @@ public class CargadorVE {
         this.potenciaMaxima = potenciaMaxima;
         this.ubicacion = ubicacion;
         this.potenciaActual = 0.0;
-        this.bitacora = new Vector<>();
+        this.bitacora = new RegistroBitacora[TAMANO_BITACORA_INICIAL];
+        this.cantidadRegistros = 0;
         totalCargadores++;
     }
 
     /**
-     * Constructor reducido. Usa este(...) con valores por defecto especificados.
+     * Constructor reducido.
      *
-     * @param fabricante Marca.
-     * @param anioInstalacion Año.
-     * @param potenciaMaxima Potencia max.
+     * @param fabricante Fabricante.
+     * @param anioInstalacion Anio de instalacion.
+     * @param potenciaMaxima Potencia maxima.
      */
     public CargadorVE(String fabricante, int anioInstalacion, double potenciaMaxima) {
-        this(fabricante, anioInstalacion, VOLTAJE_DEFECTO, TipoConector.TIPO_2,
-                TipoCargador.PEDESTAL, 1, 1, potenciaMaxima,
-                Ubicacion.PARQUEADERO_PUBLICO);
+        this(fabricante, anioInstalacion, 220, TipoConector.TIPO_2, TipoCargador.LENTO_AC,
+                1, 1, potenciaMaxima, Ubicacion.PARQUEADERO_PUBLICO);
     }
 
     /**
-     * Constructor copia. Duplica las caracteristicas tecnicas, fija potencia en 0 y crea bitacora vacia.
+     * Constructor copia.
      *
-     * @param otro Objeto a copiar.
+     * @param otro Cargador a copiar.
      */
     public CargadorVE(CargadorVE otro) {
-        this(otro.fabricante, otro.anioInstalacion, otro.voltajeNominal,
-                otro.tipoConector, otro.tipoCargador, otro.numeroConectores,
-                otro.puestosParqueo, otro.potenciaMaxima, otro.ubicacion);
-    }
-
-    // ======================================================
-    // Familia 2: aumentarPotencia
-    // ======================================================
-
-    /**
-     * Aumenta la potencia usando INCREMENTO_DEFECTO.
-     */
-    public void aumentarPotencia() {
-        aumentarPotencia(INCREMENTO_DEFECTO);
-    }
-
-    /**
-     * Aumenta la potencia actual en el valor especificado.
-     *
-     * @param incremento Valor a sumar.
-     */
-    public void aumentarPotencia(double incremento) {
-        double nuevaPotencia = this.potenciaActual + incremento;
-        if (nuevaPotencia > this.potenciaMaxima) {
-            System.out.println("Rechazado: La potencia excede la potencia maxima permitida.");
-            bitacora.add(new RegistroSesion("Intento aumentarPotencia en " + incremento + " kW", false));
-        } else {
-            this.potenciaActual = nuevaPotencia;
-            bitacora.add(new RegistroSesion("aumentarPotencia en " + incremento + " kW", true));
-        }
-    }
-
-    /**
-     * Aplica el incremento paso a paso n veces. Se detiene si un paso no es valido.
-     *
-     * @param incremento Valor a sumar en cada paso.
-     * @param veces Cantidad de iteraciones.
-     */
-    public void aumentarPotencia(double incremento, int veces) {
-        for (int i = 0; i < veces; i++) {
-            double nuevaPotencia = this.potenciaActual + incremento;
-            if (nuevaPotencia > this.potenciaMaxima) {
-                System.out.println("Rechazado en el paso " + (i + 1) + ": excede el limite.");
-                bitacora.add(new RegistroSesion("Intento aumentarPotencia paso " + (i + 1), false));
-                break;
+        if (otro != null) {
+            this.fabricante = otro.fabricante;
+            this.anioInstalacion = otro.anioInstalacion;
+            this.voltajeNominal = otro.voltajeNominal;
+            this.tipoConector = otro.tipoConector;
+            this.tipoCargador = otro.tipoCargador;
+            this.numeroConectores = otro.numeroConectores;
+            this.puestosParqueo = otro.puestosParqueo;
+            this.potenciaMaxima = otro.potenciaMaxima;
+            this.potenciaActual = otro.potenciaActual;
+            this.ubicacion = otro.ubicacion;
+            this.cantidadRegistros = otro.cantidadRegistros;
+            this.bitacora = new RegistroBitacora[Math.max(TAMANO_BITACORA_INICIAL, otro.bitacora.length)];
+            for (int i = 0; i < otro.cantidadRegistros; i++) {
+                this.bitacora[i] = otro.bitacora[i];
             }
-            this.potenciaActual = nuevaPotencia;
-            bitacora.add(new RegistroSesion("aumentarPotencia paso " + (i + 1) + " a "
-                    + potenciaActual + " kW", true));
+            totalCargadores++;
         }
     }
 
-    // ======================================================
-    // Familia 3: tiempoEstimadoCarga
-    // ======================================================
+    private void agregarABitacora(String evento, boolean exitoso) {
+        if (cantidadRegistros == bitacora.length) {
+            RegistroBitacora[] nuevoArreglo = new RegistroBitacora[bitacora.length * 2];
+            System.arraycopy(bitacora, 0, nuevoArreglo, 0, bitacora.length);
+            bitacora = nuevoArreglo;
+        }
+        bitacora[cantidadRegistros] = new RegistroBitacora(fabricante, anioInstalacion,
+                potenciaActual, evento, exitoso);
+        cantidadRegistros++;
+        contadorRegistros++;
+    }
+
+    public static int getTotalCargadores() {
+        return totalCargadores;
+    }
+
+    public static int getContadorRegistros() {
+        return contadorRegistros;
+    }
+
+    public String getFabricante() {
+        return fabricante;
+    }
+
+    public double getPotenciaActual() {
+        return potenciaActual;
+    }
+
+    public double getPotenciaMaxima() {
+        return potenciaMaxima;
+    }
+
+    public TipoConector getTipoConector() {
+        return tipoConector;
+    }
+
+    public TipoCargador getTipoCargador() {
+        return tipoCargador;
+    }
+
+    public Ubicacion getUbicacion() {
+        return ubicacion;
+    }
+
+    public int getCantidadRegistros() {
+        return cantidadRegistros;
+    }
+
+    public RegistroBitacora[] getBitacora() {
+        return bitacora;
+    }
 
     /**
-     * Calcula tiempo estimado usando la potencia actual.
+     * Establece la potencia actual del cargador.
      *
-     * @param energiaKWh Energia requerida en kWh.
-     * @return Horas estimadas o -1 si potencia actual es 0.
+     * @param potencia Nueva potencia.
+     * @return true si se aplico con exito.
      */
-    public double tiempoEstimadoCarga(double energiaKWh) {
-        if (this.potenciaActual == 0) {
-            System.out.println("Aviso: La potencia actual es 0 kW, no se puede calcular el tiempo.");
+    public boolean setPotenciaActual(double potencia) {
+        if (potencia >= 0.0 && potencia <= potenciaMaxima) {
+            this.potenciaActual = potencia;
+            agregarABitacora("setPotenciaActual en " + potencia + " kW", true);
+            return true;
+        }
+        agregarABitacora("setPotenciaActual rechazada (" + potencia + " kW)", false);
+        return false;
+    }
+
+    /**
+     * Aumenta la potencia con incremento explicito.
+     *
+     * @param incremento Valor a incrementar.
+     * @return true si fue exitoso.
+     */
+    public boolean aumentarPotencia(double incremento) {
+        double nueva = potenciaActual + incremento;
+        if (nueva <= potenciaMaxima) {
+            potenciaActual = nueva;
+            agregarABitacora("aumentarPotencia en " + incremento + " kW", true);
+            return true;
+        }
+        agregarABitacora("aumentarPotencia rechazada (" + incremento + " kW)", false);
+        return false;
+    }
+
+    /**
+     * Aumenta la potencia usando el incremento por defecto.
+     *
+     * @return true si fue exitoso.
+     */
+    public boolean aumentarPotencia() {
+        return aumentarPotencia(INCREMENTO_DEFECTO);
+    }
+
+    /**
+     * Intenta aumentar la potencia en 'pasos' repetidos.
+     *
+     * @param incremento Valor por paso.
+     * @param pasos Cantidad de pasos.
+     * @return true si al menos un paso tuvo exito.
+     */
+    public boolean aumentarPotencia(double incremento, int pasos) {
+        boolean alMenosUno = false;
+        for (int i = 1; i <= pasos; i++) {
+            boolean res = aumentarPotencia(incremento);
+            if (res) {
+                alMenosUno = true;
+            }
+        }
+        return alMenosUno;
+    }
+
+    /**
+     * Reduce la potencia actual.
+     *
+     * @param decremento Valor a reducir.
+     * @return true si fue exitoso.
+     */
+    public boolean reducirPotencia(double decremento) {
+        double nueva = potenciaActual - decremento;
+        if (nueva >= 0.0) {
+            potenciaActual = nueva;
+            agregarABitacora("reducirPotencia en " + decremento + " kW", true);
+            return true;
+        }
+        agregarABitacora("reducirPotencia rechazada (" + decremento + " kW)", false);
+        return false;
+    }
+
+    /**
+     * Corta la carga dejando la potencia actual en 0.
+     */
+    public void cortarCarga() {
+        potenciaActual = 0.0;
+        agregarABitacora("cortarCarga ejecutado", true);
+    }
+
+    /**
+     * Calcula el tiempo estimado de carga segun la potencia actual.
+     *
+     * @param energiaKwh Energia requerida.
+     * @return Horas estimadas o -1 si potencia es 0.
+     */
+    public double tiempoEstimadoCarga(double energiaKwh) {
+        if (potenciaActual <= 0.0) {
             return -1.0;
         }
-        return energiaKWh / this.potenciaActual;
+        return energiaKwh / potenciaActual;
     }
 
     /**
-     * Calcula tiempo estimado usando una potencia programada.
+     * Calcula el tiempo estimado segun una potencia programada.
      *
-     * @param energiaKWh Energia requerida en kWh.
-     * @param potenciaProgramada Potencia a evaluar.
-     * @return Horas estimadas o -1 si potencia programada es <= 0.
+     * @param energiaKwh Energia requerida.
+     * @param potenciaProgramada Potencia programada.
+     * @return Horas estimadas.
      */
-    public double tiempoEstimadoCarga(double energiaKWh, double potenciaProgramada) {
-        if (potenciaProgramada <= 0) {
-            System.out.println("Aviso: La potencia programada debe ser mayor a 0 kW.");
+    public double tiempoEstimadoCarga(double energiaKwh, double potenciaProgramada) {
+        if (potenciaProgramada <= 0.0) {
             return -1.0;
         }
-        return energiaKWh / potenciaProgramada;
+        return energiaKwh / potenciaProgramada;
     }
 
     /**
-     * Calcula tiempo estimado sumando el tiempo de las pausas.
+     * Calcula el tiempo estimado con pausas.
      *
-     * @param energiaKWh Energia requerida en kWh.
-     * @param pausas Cantidad de pausas.
-     * @param minutosPorPausa Duracion de cada pausa en minutos.
-     * @return Horas estimadas totales.
+     * @param energiaKwh Energia requerida.
+     * @param numeroPausas Cantidad de pausas.
+     * @param minutosPorPausa Duracion por pausa en minutos.
+     * @return Horas estimadas.
      */
-    public double tiempoEstimadoCarga(double energiaKWh, int pausas, double minutosPorPausa) {
-        double tiempoBase = tiempoEstimadoCarga(energiaKWh);
-        if (tiempoBase == -1.0) {
+    public double tiempoEstimadoCarga(double energiaKwh, int numeroPausas, double minutosPorPausa) {
+        double base = tiempoEstimadoCarga(energiaKwh);
+        if (base < 0.0) {
             return -1.0;
         }
-        double horasPausas = (pausas * minutosPorPausa) / MINUTOS_POR_HORA;
-        return tiempoBase + horasPausas;
+        double horasPausa = (numeroPausas * minutosPorPausa) / 60.0;
+        return base + horasPausa;
     }
 
-    // ======================================================
-    // Familia 4: Métodos estáticos filtrar
-    // ======================================================
-
     /**
-     * Filtra cargadores por TipoConector.
+     * Muestra informacion del cargador.
      *
-     * @param arreglo Arreglo de cargadores.
-     * @param conector Criterio de conector.
-     * @return Arreglo nuevo con el tamaño exacto.
+     * @param incluirBitacora true para imprimir la bitacora completa.
      */
-    public static CargadorVE[] filtrar(CargadorVE[] arreglo, TipoConector conector) {
-        int cont = 0;
-        for (CargadorVE c : arreglo) {
-            if (c != null && c.getTipoConector() == conector) {
-                cont++;
-            }
-        }
-        CargadorVE[] resultado = new CargadorVE[cont];
-        int idx = 0;
-        for (CargadorVE c : arreglo) {
-            if (c != null && c.getTipoConector() == conector) {
-                resultado[idx++] = c;
-            }
-        }
-        return resultado;
-    }
-
-    /**
-     * Filtra cargadores por TipoCargador.
-     *
-     * @param arreglo Arreglo de cargadores.
-     * @param tipo Criterio de tipo de cargador.
-     * @return Arreglo nuevo con el tamaño exacto.
-     */
-    public static CargadorVE[] filtrar(CargadorVE[] arreglo, TipoCargador tipo) {
-        int cont = 0;
-        for (CargadorVE c : arreglo) {
-            if (c != null && c.getTipoCargador() == tipo) {
-                cont++;
-            }
-        }
-        CargadorVE[] resultado = new CargadorVE[cont];
-        int idx = 0;
-        for (CargadorVE c : arreglo) {
-            if (c != null && c.getTipoCargador() == tipo) {
-                resultado[idx++] = c;
-            }
-        }
-        return resultado;
-    }
-
-    /**
-     * Filtra cargadores por Ubicacion.
-     *
-     * @param arreglo Arreglo de cargadores.
-     * @param ubicacion Criterio de ubicacion.
-     * @return Arreglo nuevo con el tamaño exacto.
-     */
-    public static CargadorVE[] filtrar(CargadorVE[] arreglo, Ubicacion ubicacion) {
-        int cont = 0;
-        for (CargadorVE c : arreglo) {
-            if (c != null && c.getUbicacion() == ubicacion) {
-                cont++;
-            }
-        }
-        CargadorVE[] resultado = new CargadorVE[cont];
-        int idx = 0;
-        for (CargadorVE c : arreglo) {
-            if (c != null && c.getUbicacion() == ubicacion) {
-                resultado[idx++] = c;
-            }
-        }
-        return resultado;
-    }
-
-    // ======================================================
-    // Familia 5: mostrar y métodos de comportamiento
-    // ======================================================
-
-    /**
-     * Muestra la informacion basica del cargador.
-     */
-    public void mostrar() {
-        mostrar(false);
-    }
-
-    /**
-     * Muestra la informacion del cargador y opcionalmente la bitacora completa.
-     *
-     * @param detallado Si es true, imprime la bitacora.
-     */
-    public void mostrar(boolean detallado) {
+    public void mostrar(boolean incluirBitacora) {
         System.out.println("Fabricante: " + fabricante);
-        System.out.println("Año Instalacion: " + anioInstalacion);
+        System.out.println("Anio Instalacion: " + anioInstalacion);
         System.out.println("Voltaje Nominal: " + voltajeNominal + " V");
         System.out.println("Tipo Conector: " + tipoConector);
         System.out.println("Tipo Cargador: " + tipoCargador);
@@ -423,271 +398,151 @@ public class CargadorVE {
         System.out.println("Potencia Maxima: " + potenciaMaxima + " kW");
         System.out.println("Ubicacion: " + ubicacion);
         System.out.println("Potencia Actual: " + potenciaActual + " kW");
-
-        if (detallado) {
+        if (incluirBitacora) {
             System.out.println("--- BITACORA ---");
-            for (RegistroSesion r : bitacora) {
-                System.out.println(r.describir());
+            for (int i = 0; i < cantidadRegistros; i++) {
+                System.out.println("#" + (i + 1) + " | " + bitacora[i]);
             }
         }
     }
 
-    /**
-     * Reduce la potencia actual en el valor especificado.
-     *
-     * @param decremento Valor a restar.
-     */
-    public void reducirPotencia(double decremento) {
-        double nuevaPotencia = this.potenciaActual - decremento;
-        if (nuevaPotencia < 0) {
-            System.out.println("Rechazado: La potencia no puede ser negativa.");
-            bitacora.add(new RegistroSesion("Intento reducirPotencia en " + decremento + " kW", false));
-        } else {
-            this.potenciaActual = nuevaPotencia;
-            bitacora.add(new RegistroSesion("reducirPotencia en " + decremento + " kW", true));
+    // --- METODOS DE FILTRADO Y ESTADISTICAS ---
+
+    public static CargadorVE[] filtrar(CargadorVE[] flota, TipoConector tc) {
+        int c = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.tipoConector == tc) {
+                c++;
+            }
+        }
+        CargadorVE[] res = new CargadorVE[c];
+        int idx = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.tipoConector == tc) {
+                res[idx++] = carg;
+            }
+        }
+        return res;
+    }
+
+    public static CargadorVE[] filtrar(CargadorVE[] flota, TipoCargador tc) {
+        int c = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.tipoCargador == tc) {
+                c++;
+            }
+        }
+        CargadorVE[] res = new CargadorVE[c];
+        int idx = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.tipoCargador == tc) {
+                res[idx++] = carg;
+            }
+        }
+        return res;
+    }
+
+    public static CargadorVE[] filtrar(CargadorVE[] flota, Ubicacion u) {
+        int c = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.ubicacion == u) {
+                c++;
+            }
+        }
+        CargadorVE[] res = new CargadorVE[c];
+        int idx = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.ubicacion == u) {
+                res[idx++] = carg;
+            }
+        }
+        return res;
+    }
+
+    public static void contarPorTipo(CargadorVE[] flota) {
+        if (flota == null) {
+            return;
+        }
+        for (TipoCargador tc : TipoCargador.values()) {
+            int cnt = 0;
+            for (CargadorVE carg : flota) {
+                if (carg != null && carg.tipoCargador == tc) {
+                    cnt++;
+                }
+            }
+            if (cnt > 0) {
+                System.out.println(tc + ": " + cnt);
+            }
         }
     }
 
-    /**
-     * Deja la potencia actual en 0.
-     */
-    public void cortarCarga() {
-        this.potenciaActual = 0.0;
-        bitacora.add(new RegistroSesion("cortarCarga ejecutado", true));
+    public static double promedioPotencia(CargadorVE[] flota) {
+        if (flota == null || flota.length == 0) {
+            return 0.0;
+        }
+        double suma = 0.0;
+        int count = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null) {
+                suma += carg.potenciaActual;
+                count++;
+            }
+        }
+        return count == 0 ? 0.0 : suma / count;
     }
 
-    // ======================================================
-    // Getters y Setters
-    // ======================================================
-
-    /**
-     * Obtiene el total de cargadores.
-     *
-     * @return Total de cargadores.
-     */
-    public static int getTotalCargadores() {
-        return totalCargadores;
-    }
-
-    /**
-     * Establece el total de cargadores.
-     *
-     * @param totalCargadores Total de cargadores.
-     */
-    public static void setTotalCargadores(int totalCargadores) {
-        CargadorVE.totalCargadores = totalCargadores;
-    }
-
-    /**
-     * Obtiene el contador de registros.
-     *
-     * @return Contador de registros.
-     */
-    public static int getContadorRegistros() {
-        return contadorRegistros;
-    }
-
-    /**
-     * Establece el contador de registros.
-     *
-     * @param contadorRegistros Contador de registros.
-     */
-    public static void setContadorRegistros(int contadorRegistros) {
-        CargadorVE.contadorRegistros = contadorRegistros;
-    }
-
-    /**
-     * Obtiene el fabricante.
-     *
-     * @return Fabricante del equipo.
-     */
-    public String getFabricante() {
-        return fabricante;
-    }
-
-    /**
-     * Establece el fabricante.
-     *
-     * @param fabricante Marca a asignar.
-     */
-    public void setFabricante(String fabricante) {
-        this.fabricante = fabricante;
-    }
-
-    /**
-     * Obtiene el año de instalacion.
-     *
-     * @return Año de instalacion.
-     */
-    public int getAnioInstalacion() {
-        return anioInstalacion;
-    }
-
-    /**
-     * Establece el año de instalacion.
-     *
-     * @param anioInstalacion Año a asignar.
-     */
-    public void setAnioInstalacion(int anioInstalacion) {
-        this.anioInstalacion = anioInstalacion;
-    }
-
-    /**
-     * Obtiene el voltaje nominal.
-     *
-     * @return Voltaje nominal.
-     */
-    public int getVoltajeNominal() {
-        return voltajeNominal;
-    }
-
-    /**
-     * Establece el voltaje nominal.
-     *
-     * @param voltajeNominal Voltaje a asignar.
-     */
-    public void setVoltajeNominal(int voltajeNominal) {
-        this.voltajeNominal = voltajeNominal;
-    }
-
-    /**
-     * Obtiene el tipo de conector.
-     *
-     * @return TipoConector actual.
-     */
-    public TipoConector getTipoConector() {
-        return tipoConector;
-    }
-
-    /**
-     * Establece el tipo de conector.
-     *
-     * @param tipoConector Conector a asignar.
-     */
-    public void setTipoConector(TipoConector tipoConector) {
-        this.tipoConector = tipoConector;
-    }
-
-    /**
-     * Obtiene el tipo de cargador.
-     *
-     * @return TipoCargador actual.
-     */
-    public TipoCargador getTipoCargador() {
-        return tipoCargador;
-    }
-
-    /**
-     * Establece el tipo de cargador.
-     *
-     * @param tipoCargador Tipo de cargador a asignar.
-     */
-    public void setTipoCargador(TipoCargador tipoCargador) {
-        this.tipoCargador = tipoCargador;
-    }
-
-    /**
-     * Obtiene el numero de conectores.
-     *
-     * @return Cantidad de conectores.
-     */
-    public int getNumeroConectores() {
-        return numeroConectores;
-    }
-
-    /**
-     * Establece el numero de conectores.
-     *
-     * @param numeroConectores Cantidad de conectores a asignar.
-     */
-    public void setNumeroConectores(int numeroConectores) {
-        this.numeroConectores = numeroConectores;
-    }
-
-    /**
-     * Obtiene los puestos de parqueo.
-     *
-     * @return Cantidad de puestos.
-     */
-    public int getPuestosParqueo() {
-        return puestosParqueo;
-    }
-
-    /**
-     * Establece los puestos de parqueo.
-     *
-     * @param puestosParqueo Puestos a asignar.
-     */
-    public void setPuestosParqueo(int puestosParqueo) {
-        this.puestosParqueo = puestosParqueo;
-    }
-
-    /**
-     * Obtiene la potencia maxima.
-     *
-     * @return Potencia maxima en kW.
-     */
-    public double getPotenciaMaxima() {
-        return potenciaMaxima;
-    }
-
-    /**
-     * Establece la potencia maxima.
-     *
-     * @param potenciaMaxima Potencia maxima a asignar.
-     */
-    public void setPotenciaMaxima(double potenciaMaxima) {
-        this.potenciaMaxima = potenciaMaxima;
-    }
-
-    /**
-     * Obtiene la ubicacion.
-     *
-     * @return Ubicacion actual.
-     */
-    public Ubicacion getUbicacion() {
-        return ubicacion;
-    }
-
-    /**
-     * Establece la ubicacion.
-     *
-     * @param ubicacion Ubicacion a asignar.
-     */
-    public void setUbicacion(Ubicacion ubicacion) {
-        this.ubicacion = ubicacion;
-    }
-
-    /**
-     * Obtiene la potencia actual.
-     *
-     * @return Potencia actual en kW.
-     */
-    public double getPotenciaActual() {
-        return potenciaActual;
-    }
-
-    /**
-     * Establece la potencia actual validando limites.
-     *
-     * @param potenciaActual Nueva potencia.
-     */
-    public void setPotenciaActual(double potenciaActual) {
-        if (potenciaActual < 0 || potenciaActual > this.potenciaMaxima) {
-            System.out.println("Rechazado: Potencia fuera de limites (" + potenciaActual + " kW).");
-            bitacora.add(new RegistroSesion("Intento setPotenciaActual (" + potenciaActual + " kW)", false));
-        } else {
-            this.potenciaActual = potenciaActual;
-            bitacora.add(new RegistroSesion("setPotenciaActual a " + potenciaActual + " kW", true));
+    public static void mayorPotencia(CargadorVE[] flota) {
+        if (flota == null) {
+            return;
+        }
+        CargadorVE max = null;
+        for (CargadorVE carg : flota) {
+            if (carg != null) {
+                if (max == null || carg.potenciaActual > max.potenciaActual) {
+                    max = carg;
+                }
+            }
+        }
+        if (max != null) {
+            System.out.println("Fabricante: " + max.fabricante + ", Potencia: " + max.potenciaActual + " kW");
         }
     }
 
-    /**
-     * Obtiene la bitacora de sesiones.
-     *
-     * @return Vector con los registros.
-     */
-    public Vector<RegistroSesion> getBitacora() {
-        return bitacora;
+    public static int excesosDePotenciaContratada(CargadorVE[] flota) {
+        if (flota == null) {
+            return 0;
+        }
+        int cnt = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.potenciaActual > LIMITE_RED) {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
+    // --- RUTA 0: cargadoresPorConectores ---
+    public static CargadorVE[] cargadoresPorConectores(CargadorVE[] flota, int conectores) {
+        if (flota == null) {
+            return new CargadorVE[0];
+        }
+        int c = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.numeroConectores == conectores) {
+                c++;
+            }
+        }
+        if (c == 0) {
+            System.out.println("No hay resultados para " + conectores + " conectores.");
+            return new CargadorVE[0];
+        }
+        CargadorVE[] res = new CargadorVE[c];
+        int idx = 0;
+        for (CargadorVE carg : flota) {
+            if (carg != null && carg.numeroConectores == conectores) {
+                res[idx++] = carg;
+            }
+        }
+        return res;
     }
 }
