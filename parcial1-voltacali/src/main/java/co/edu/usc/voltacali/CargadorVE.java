@@ -175,6 +175,84 @@ public class CargadorVE {
         totalCargadores++;
     }
 
+    // ======================================================
+    // Parte B: Comportamiento base
+    // ======================================================
+
+    /**
+     * Aumenta la potencia actual en el valor especificado.
+     *
+     * @param incremento Valor a sumar.
+     */
+    public void aumentarPotencia(double incremento) {
+        double nuevaPotencia = this.potenciaActual + incremento;
+        if (nuevaPotencia > this.potenciaMaxima) {
+            System.out.println("Rechazado: La potencia excede la potencia maxima permitida.");
+            bitacora.add(new RegistroSesion("Intento aumentarPotencia en " + incremento + " kW", false));
+        } else {
+            this.potenciaActual = nuevaPotencia;
+            bitacora.add(new RegistroSesion("aumentarPotencia en " + incremento + " kW", true));
+        }
+    }
+
+    /**
+     * Reduce la potencia actual en el valor especificado.
+     *
+     * @param decremento Valor a restar.
+     */
+    public void reducirPotencia(double decremento) {
+        double nuevaPotencia = this.potenciaActual - decremento;
+        if (nuevaPotencia < 0) {
+            System.out.println("Rechazado: La potencia no puede ser negativa.");
+            bitacora.add(new RegistroSesion("Intento reducirPotencia en " + decremento + " kW", false));
+        } else {
+            this.potenciaActual = nuevaPotencia;
+            bitacora.add(new RegistroSesion("reducirPotencia en " + decremento + " kW", true));
+        }
+    }
+
+    /**
+     * Deja la potencia actual en 0.
+     */
+    public void cortarCarga() {
+        this.potenciaActual = 0.0;
+        bitacora.add(new RegistroSesion("cortarCarga ejecutado", true));
+    }
+
+    /**
+     * Calcula el tiempo estimado de carga en horas.
+     *
+     * @param energiaKWh Energia requerida en kWh.
+     * @return Horas estimadas o -1 si la potencia actual es 0.
+     */
+    public double tiempoEstimadoCarga(double energiaKWh) {
+        if (this.potenciaActual == 0) {
+            System.out.println("Aviso: La potencia actual es 0 kW, no se puede calcular el tiempo.");
+            return -1.0;
+        }
+        return energiaKWh / this.potenciaActual;
+    }
+
+    /**
+     * Muestra todos los atributos del cargador en pantalla.
+     */
+    public void mostrar() {
+        System.out.println("Fabricante: " + fabricante);
+        System.out.println("Año Instalacion: " + anioInstalacion);
+        System.out.println("Voltaje Nominal: " + voltajeNominal + " V");
+        System.out.println("Tipo Conector: " + tipoConector);
+        System.out.println("Tipo Cargador: " + tipoCargador);
+        System.out.println("Numero Conectores: " + numeroConectores);
+        System.out.println("Puestos Parqueo: " + puestosParqueo);
+        System.out.println("Potencia Maxima: " + potenciaMaxima + " kW");
+        System.out.println("Ubicacion: " + ubicacion);
+        System.out.println("Potencia Actual: " + potenciaActual + " kW");
+    }
+
+    // ======================================================
+    // Getters y Setters
+    // ======================================================
+
     /**
      * Obtiene el total de cargadores.
      *
