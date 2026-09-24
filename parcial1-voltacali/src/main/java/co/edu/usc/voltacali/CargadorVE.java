@@ -2,11 +2,14 @@ package co.edu.usc.voltacali;
 
 import java.util.Vector;
 
+/**
+ * Clase que representa un cargador de vehiculo electrico.
+ */
 public class CargadorVE {
 
-    // ======================================================
-    // Parte D a): Enums anidados
-    // ======================================================
+    /**
+     * Enum para los tipos de conector.
+     */
     public enum TipoConector {
         TIPO_1,
         TIPO_2,
@@ -15,6 +18,9 @@ public class CargadorVE {
         GBT
     }
 
+    /**
+     * Enum para los tipos de cargador.
+     */
     public enum TipoCargador {
         MURAL,
         PEDESTAL,
@@ -24,6 +30,9 @@ public class CargadorVE {
         BIDIRECCIONAL_V2G
     }
 
+    /**
+     * Enum para las ubicaciones.
+     */
     public enum Ubicacion {
         CENTRO_COMERCIAL,
         UNIVERSIDAD,
@@ -35,17 +44,11 @@ public class CargadorVE {
         FLOTA_CORPORATIVA
     }
 
-    // ======================================================
-    // Parte D e): Miembros estáticos
-    // ======================================================
     public static int totalCargadores = 0;
     public static int contadorRegistros = 0;
     public static final double LIMITE_RED = 50.0;
     public static final double INCREMENTO_DEFECTO = 5.0;
 
-    // ======================================================
-    // Parte A: Atributos privados
-    // ======================================================
     private String fabricante;
     private int anioInstalacion;
     private int voltajeNominal;
@@ -57,12 +60,11 @@ public class CargadorVE {
     private Ubicacion ubicacion;
     private double potenciaActual;
 
-    // Parte D c): Bitácora
     private Vector<RegistroSesion> bitacora;
 
-    // ======================================================
-    // Parte D b): Clase interna no estática RegistroSesion
-    // ======================================================
+    /**
+     * Clase interna no estatica para registrar las sesiones de carga.
+     */
     public class RegistroSesion {
         private int idRegistro;
         private String fabricante;
@@ -71,6 +73,12 @@ public class CargadorVE {
         private String evento;
         private boolean valido;
 
+        /**
+         * Constructor para RegistroSesion.
+         *
+         * @param evento Descripcion del evento.
+         * @param valido Si fue valido o no.
+         */
         public RegistroSesion(String evento, boolean valido) {
             contadorRegistros++;
             this.idRegistro = contadorRegistros;
@@ -81,6 +89,11 @@ public class CargadorVE {
             this.valido = valido;
         }
 
+        /**
+         * Describe el registro.
+         *
+         * @return Descripcion formateada.
+         */
         public String describir() {
             return String.format("#%d | %s | Año: %d | Pot: %.2f kW | Evento: %s | Valido: %b",
                     idRegistro, fabricante, anioInstalacion, potenciaActual, evento, valido);
@@ -95,7 +108,13 @@ public class CargadorVE {
         }
     }
 
-    // Constructor temporal
+    /**
+     * Constructor reducido temporal.
+     *
+     * @param fabricante Marca.
+     * @param anioInstalacion Año.
+     * @param potenciaMaxima Potencia max.
+     */
     public CargadorVE(String fabricante, int anioInstalacion, double potenciaMaxima) {
         this.fabricante = fabricante;
         this.anioInstalacion = anioInstalacion;
@@ -105,9 +124,6 @@ public class CargadorVE {
         totalCargadores++;
     }
 
-    // ======================================================
-    // Parte A: Métodos Getters y Setters
-    // ======================================================
     public String getFabricante() {
         return fabricante;
     }
@@ -184,6 +200,11 @@ public class CargadorVE {
         return potenciaActual;
     }
 
+    /**
+     * Establece la potencia actual validando limites.
+     *
+     * @param potenciaActual Nueva potencia.
+     */
     public void setPotenciaActual(double potenciaActual) {
         if (potenciaActual < 0 || potenciaActual > this.potenciaMaxima) {
             System.out.println("Rechazado: Potencia fuera de limites (" + potenciaActual + " kW).");
